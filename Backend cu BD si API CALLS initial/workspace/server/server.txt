@@ -1,0 +1,46 @@
+const express= require("express")
+const Sequelize = require("sequelize")
+
+const app = express()
+
+const sequelize = new Sequelize("server","root",'', {
+  dialect:"mysql",
+  host:"localhost"
+})
+
+const Students = sequelize.define("students",{
+  name: Sequelize.STRING,
+  group: Sequelize.STRING,
+  homework: Sequelize.TINYINT
+})
+
+const Homework = sequelize.define("homeworks", {
+  subject: Sequelize.STRING
+})
+
+sequelize.authenticate().then(function(){
+  console.log("Succes")
+}).catch(function(err){
+  console.log("Error")
+  console.log(err)
+})
+app.use(express.json())
+app.use(express.urlencoded())
+app.get('/createdb',(request, response) => {
+  
+  sequelize.sync({force:true}).then(()=>{
+    response.status(200).send("tables created")
+  }).catch((err) =>{
+  console.log(err)
+  response.status(500).send("TABLES NOT CREATED ")
+})
+
+})
+
+app.get('/students', (request,response)=>{
+  Students.findAll().then(function(students) {
+    response.status(200).json(students.name, students.group, students.homework)
+  })
+})
+
+app.listen(8080)
